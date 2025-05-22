@@ -48,8 +48,8 @@ export class AuthService {
             secure: this.configService.get('NODE_ENV') === 'production',
             expires: expiresAccessToken,
         });
-
-
+        const userData = await this.userService.getUser({ id:user._id.toHexString() });
+        return userData       
     }
 
     async verifyUser (email: string, password: string) {
