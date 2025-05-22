@@ -19,7 +19,8 @@ export class User {
   @Prop({
     type: String,
     enum: UserRole,
-    required: true,
+    // required: true,
+    default: UserRole.Patient
   })
   role: UserRole;
 

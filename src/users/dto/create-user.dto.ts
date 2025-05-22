@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsStrongPassword } from "class-validator";
 import { UserRole } from "../enum/user-role.enum";
 
 export class CreateUserDto {
@@ -18,6 +18,6 @@ export class CreateUserDto {
     @IsNotEmpty({ message: 'Role is required field' })
     role: UserRole;
 
-    @IsString()
+    @IsOptional()
     specialization: string;
 }

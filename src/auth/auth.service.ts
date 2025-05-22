@@ -48,11 +48,11 @@ export class AuthService {
             secure: this.configService.get('NODE_ENV') === 'production',
             expires: expiresAccessToken,
         });
-        const userData = await this.userService.getUser({ id:user._id.toHexString() });
+        const userData = await this.userService.getUser({ _id:user._id.toHexString() });
         return userData       
     }
 
-    async verifyUser (email: string, password: string) {
+    async verifyUser(email: string, password: string) {
         try {
             const user = await this.userService.getUser({ email });
             const authenticated = await compare(password, user.password);
@@ -65,5 +65,9 @@ export class AuthService {
         }
     };
 
-
+    async validateJwtUser(userId: string) {
+        const user = await this.userService.getUser({_id: userId});
+        if(!user) throw new UnauthorizedException('User not found');
+        return user;
+    }
 }
