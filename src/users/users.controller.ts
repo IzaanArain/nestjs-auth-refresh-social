@@ -21,7 +21,6 @@ export class UsersController {
     async getUsers (
         @CurrentUser() user: User
     ) {
-        console.log(user);
         return this.usersService.getUsers();
     }
 }
