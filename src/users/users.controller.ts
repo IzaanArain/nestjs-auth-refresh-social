@@ -1,10 +1,14 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, SetMetadata, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from './schema/user.schema';
+import { UserRole } from './enum/user-role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/auth/guard/roles/roles.guard';
 
+// @Roles(UserRole.Patient) // has lowerer priority 
 @Controller('users')
 export class UsersController {
     constructor(
@@ -16,8 +20,12 @@ export class UsersController {
         return await this.usersService.createUser(request)
     }
 
-    @Get()
+    // @SetMetadata('roles', [UserRole.Patient])
+    // @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.Patient) // ? custom decorator for role checking // ? you can pass multiple enum roles as we are spreading them in the decorator
+    @UseGuards(RolesGuard)
     @UseGuards(JwtAuthGuard)
+    @Get()
     async getUsers (
         @CurrentUser() user: User
     ) {
