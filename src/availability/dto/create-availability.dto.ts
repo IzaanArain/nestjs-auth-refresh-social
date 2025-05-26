@@ -17,9 +17,9 @@ class SlotTimeDto {
 }
 
 export class CreateAvailabilityWithSlotsDto {
-  @IsString()
-  @IsNotEmpty()
-  doctorId: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // doctorId: string;
 
   @IsString()
   @IsNotEmpty()
@@ -28,5 +28,5 @@ export class CreateAvailabilityWithSlotsDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SlotTimeDto)
-  slotTimes: SlotTimeDto[];
+  slots: SlotTimeDto[];
 }

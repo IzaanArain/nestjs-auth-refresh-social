@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Availability } from './schema/availability.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Mongoose, Types } from 'mongoose';
@@ -14,25 +14,36 @@ export class AvailabilityService {
     private readonly TimeSlotModel: Model<TimeSlot>,
   ) { }
 
-  async createAvailabilityWithSlots({
-    doctorId,
-    day,
-    slotTimes,
-  }: CreateAvailabilityWithSlotsDto) {
-    const slots = await this.TimeSlotModel.insertMany(
-      slotTimes.map(({ from, to }) => ({
-        from,
-        to,
-        doctor: doctorId,
-      })),
-    );
+  async createAvailabilityWithSlots(
+    doctorId: string,
+    schedule: CreateAvailabilityWithSlotsDto[],
+  ) {
+    if (schedule.length === 0) {
+      throw new ForbiddenException('Pleas provide a valid schedule');
+    }
+    await this.TimeSlotModel.deleteMany({ doctor: doctorId});
+    await this.AvailabilityModel.deleteMany({doctor: doctorId});
+    return await Promise.all(
+      schedule.map(async ({ day, slots }) => {
 
-    const slotIds = slots.map((slot) => slot._id);
+        const createdSlots = await this.TimeSlotModel.insertMany(
+          slots.map(({ from, to }) => {
+            return {
+              from,
+              to,
+              doctor: doctorId,
+            };
+          }),
+        );
 
-    return this.AvailabilityModel.findOneAndUpdate(
-      { doctor: doctorId, day },
-      { $addToSet: { slots: { $each: slotIds } } },
-      { new: true, upsert: true },
+        const slotIds = createdSlots.map((slot) => slot._id);
+
+        return this.AvailabilityModel.findOneAndUpdate(
+          { doctor: doctorId, day },
+          { slots: slotIds },
+          { new: true, upsert: true },
+        );
+      }),
     );
   }
 
@@ -66,7 +77,6 @@ export class AvailabilityService {
         },
       },
     ]);
-    return availabilityTimeSlots
+    return availabilityTimeSlots;
   }
-
 }

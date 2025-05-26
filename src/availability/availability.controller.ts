@@ -9,17 +9,18 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('availability')
 export class AvailabilityController {
-  constructor(private readonly availabilityService: AvailabilityService) {}
+  constructor(private readonly availabilityService: AvailabilityService) { }
 
   @Roles(UserRole.Doctor)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
-    @Body() dto: CreateAvailabilityWithSlotsDto,
+    @Body() schedule: CreateAvailabilityWithSlotsDto[],
     @Request() request
   ) {
-    return this.availabilityService.createAvailabilityWithSlots(dto);
+    const data = this.availabilityService.createAvailabilityWithSlots(request.user._id,schedule);
+    return { success: true, message: 'Schedule updated successfully', data };
   }
 
 
@@ -30,7 +31,7 @@ export class AvailabilityController {
   async getAvailabilityDaySlots(
     @Request() request
   ) {
-    return this.availabilityService.getAvailabilityWithSlots(request.user._id);
+    return await this.availabilityService.getAvailabilityWithSlots(request.user._id)
   }
 
 }

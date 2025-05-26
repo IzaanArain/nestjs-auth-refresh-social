@@ -17,32 +17,32 @@ export class AuthService {
 
   async login(user: User, response: Response) {
     // cookie expiration time in ms
-    const expiresAccessToken = new Date();
-    expiresAccessToken.setMilliseconds(
-      expiresAccessToken.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
-          ),
-        ),
-    );
+    // const expiresAccessToken = new Date();
+    // expiresAccessToken.setMilliseconds(
+    //   expiresAccessToken.getTime() +
+    //     parseInt(
+    //       this.configService.getOrThrow<string>(
+    //         'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+    //       ),
+    //     ),
+    // );
 
     const tokenPayload: TokenPayload = {
       userId: user._id.toHexString(),
     };
-
+    // const jwtExpiry = `${this.configService.getOrThrow<string>('JWT_ACCESS_TOKEN_EXPIRATION_MS')}ms`
     // jwt token expiration time in ms
     const accesToken = this.jwtService.sign(tokenPayload, {
       secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow<string>(
-        'JWT_ACCESS_TOKEN_EXPIRATION_MS',
-      )}ms`,
+      expiresIn: '7d', // jwtExpiry
     });
+
+    const oneWeekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     response.cookie('jwt', accesToken, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresAccessToken,
+      expires: oneWeekFromNow, // expiresAccessToken
     });
     const userData = await this.userService.getUser({
       _id: user._id.toHexString(),
