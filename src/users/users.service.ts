@@ -12,8 +12,11 @@ export class UsersService {
     ) {}
 
     async createUser(data: CreateUserDto) {
-        const userExist = await this.getUser({email: data.email})
-        if(userExist) throw new ConflictException('User with this email already exists');
+        console.log(data)
+        const userExist = (await this.userModel.findOne({ email: data.email }))?.toObject();
+        if(userExist) {
+            throw new ConflictException('User with this email already exists');
+        }
         return await new this.userModel({
             ...data,
             password: await hash(data.password,10)
@@ -23,12 +26,12 @@ export class UsersService {
     async getUser(query: FilterQuery<User>) {
         const user = (await this.userModel.findOne(query))?.toObject();
         if(!user) {
-            throw new NotFoundException('User not found')
+            throw new NotFoundException('User not found!')
         }
         return user;
     };
     
-    async getUsers() {
-        return this.userModel.find({});
+    async getUsers(query: FilterQuery<User>) {
+        return this.userModel.find(query);
     }
 }
