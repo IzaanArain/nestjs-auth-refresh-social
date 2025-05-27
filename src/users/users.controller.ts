@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, SetMetadata, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, SetMetadata, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
@@ -29,7 +29,17 @@ export class UsersController {
     async getUsers (
         @Query() user: User
     ) {
-        console.log(user)
-        return this.usersService.getUsers(user);
+        return await this.usersService.getUsers(user);
+    }
+
+    @Roles(UserRole.Patient) 
+    @UseGuards(RolesGuard)
+    @UseGuards(JwtAuthGuard)
+    @Get('doctor/:id')
+    async getDoctors (
+        @Param('id') id: string
+    ) {
+        console.log(id)
+        return await this.usersService.getDoctorInfo(id);
     }
 }

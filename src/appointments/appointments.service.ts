@@ -1,93 +1,119 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Appointments } from './schema/appointments.schema';
 import { Model, Types } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
-import { isNull } from 'util';
 
 @Injectable()
 export class AppointmentsService {
-    constructor(
-        @InjectModel(Appointments.name)
-        private readonly AppointmentsModel: Model<Appointments>,
-        private readonly userService: UsersService
-    ) { };
+  constructor(
+    @InjectModel(Appointments.name)
+    private readonly AppointmentsModel: Model<Appointments>,
+    private readonly userService: UsersService,
+  ) {}
 
-    async create({ doctorId, patientId, reason, slotId }: { doctorId: string; patientId: string; reason: string; slotId: string }) {
-        return new this.AppointmentsModel({
-            doctor: doctorId,
-            patient: patientId,
-            reason,
-            slot: slotId,
-            status: "pending"
-        }).save()
-    }
+  async create({
+    doctorId,
+    patientId,
+    reason,
+    slotId,
+  }: {
+    doctorId: string;
+    patientId: string;
+    reason: string;
+    slotId: string;
+  }) {
+    return new this.AppointmentsModel({
+      doctor: doctorId,
+      patient: patientId,
+      reason,
+      slot: slotId,
+      status: 'pending',
+    }).save();
+  }
 
-    async getAppointments(userId: string) {
-        const user = await this.userService.getUser({ _id: userId });
-        const userObjectId = new Types.ObjectId(user._id);
-        return this.AppointmentsModel.aggregate([
+  async getAppointments(userId: string) {
+    const user = await this.userService.getUser({ _id: userId });
+    const userObjectId = new Types.ObjectId(user._id);
+    return this.AppointmentsModel.aggregate([
+      {
+        $match: {
+          ...(user.role === 'doctor' && { doctor: userObjectId }),
+          ...(user.role === 'patient' && { patient: userObjectId }),
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          let: { user_id: `$doctor` },
+          pipeline: [
             {
-                $match: {
-                    ...(user.role === 'doctor' && { doctor: userObjectId } ),
-                    ...(user.role === 'patient' && { patient: userObjectId } ),
+              $match: {
+                $expr: {
+                  $eq: ['$_id', '$$user_id'],
                 },
+              },
             },
             {
-                $lookup: {
-                    from: 'users',
-                    let: { user_id: `$doctor` },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $eq: ["$_id", "$$user_id"]
-                                }
-                            }
-                        },
-                        {
-                            $project: {
-                                password: 0
-                            }
-                        }
-                    ],
-                    as: `doctor`
-                }
+              $project: {
+                password: 0,
+              },
             },
-             {
-                $lookup: {
-                    from: 'users',
-                    let: { user_id: `$patient` },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $eq: ["$_id", "$$user_id"]
-                                }
-                            }
-                        },
-                        {
-                            $project: {
-                                password: 0
-                            }
-                        }
-                    ],
-                    as: `patient`
-                }
+          ],
+          as: `doctor`,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          let: { user_id: `$patient` },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', '$$user_id'],
+                },
+              },
             },
             {
-                $unwind: {
-                    preserveNullAndEmptyArrays: true,
-                    path: `$doctor`
-                }
+              $project: {
+                password: 0,
+              },
             },
-            {
-                $unwind: {
-                    preserveNullAndEmptyArrays: true,
-                    path: `$patient`
-                }
-            },
-        ]);
-    }
-
+          ],
+          as: `patient`,
+        },
+      },
+      {
+        $lookup: {
+          from:'timeslots',
+          localField:'slot',
+          foreignField:'_id',
+          as:"slot"
+        }
+      },
+      {
+        $unwind: {
+          preserveNullAndEmptyArrays: true,
+          path:'$slot'
+        }   
+      },
+      {
+        $unwind: {
+          preserveNullAndEmptyArrays: true,
+          path: `$doctor`,
+        },
+      },
+      {
+        $unwind: {
+          preserveNullAndEmptyArrays: true,
+          path: `$patient`,
+        },
+      },
+    ]);
+  }
 }

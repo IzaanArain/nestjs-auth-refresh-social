@@ -7,9 +7,9 @@ export class CreateAppointmentDto {
   doctorId: string;
 
   //   @IsMongoId()
-  @IsString()
-  @IsNotEmpty()
-  patientId: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // patientId: string;
 
   //   @IsMongoId()
   @IsString()

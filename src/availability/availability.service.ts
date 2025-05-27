@@ -48,7 +48,7 @@ export class AvailabilityService {
   }
 
   async getAvailabilityWithSlots(doctorId: string) {
-    const availabilityTimeSlots = this.AvailabilityModel.aggregate([
+    const availabilityTimeSlots = await this.AvailabilityModel.aggregate([
       {
         $match: {
           doctor: new Types.ObjectId(doctorId),

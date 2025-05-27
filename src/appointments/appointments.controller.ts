@@ -22,8 +22,12 @@ export class AppointmentsController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createApppointment(@Body() dto: CreateAppointmentDto) {
-    return this.appointmentsService.create(dto);
+  async createApppointment(
+    @Body() dto: CreateAppointmentDto,
+    @Request() request
+  ) {
+    const data = await this.appointmentsService.create({...dto, patientId: request.user._id});
+    return { success:true, message:"Appointment booked successfully", data}
   }
 
   @Roles(UserRole.Doctor, UserRole.Patient)
@@ -31,6 +35,6 @@ export class AppointmentsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getAppointments(@Request() request) {
-    return this.appointmentsService.getAppointments(request.user._id);
+    return await this.appointmentsService.getAppointments(request.user._id);
   }
 }

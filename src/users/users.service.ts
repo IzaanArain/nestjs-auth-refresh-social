@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { User } from './schema/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { hash } from 'bcryptjs';
@@ -32,6 +32,46 @@ export class UsersService {
     };
     
     async getUsers(query: FilterQuery<User>) {
-        return this.userModel.find(query);
+        return await this.userModel.find(query);
+    }
+
+    async getDoctorInfo (doctorId: string) {
+        return (await this.userModel.aggregate([
+            {
+                $match: {
+                    _id: new Types.ObjectId(doctorId),
+                    role: 'doctor'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'availabilities',
+                    let: { doctor_id: '$_id'},
+                    pipeline: [
+                        {
+                            $match :{
+                                $expr: {
+                                    $eq: ["$doctor", "$$doctor_id"]
+                                }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'timeslots',
+                                localField: 'slots',
+                                foreignField: '_id',
+                                as: 'slots'
+                            }
+                        }
+                    ],
+                    as:'availabilities'
+                }
+            },
+            {
+                $project: {
+                    password: 0
+                }
+            } 
+        ]))?.[0]
     }
 }

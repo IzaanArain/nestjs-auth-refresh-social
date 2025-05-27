@@ -19,7 +19,7 @@ export class AvailabilityController {
     @Body() schedule: CreateAvailabilityWithSlotsDto[],
     @Request() request
   ) {
-    const data = this.availabilityService.createAvailabilityWithSlots(request.user._id,schedule);
+    const data = await this.availabilityService.createAvailabilityWithSlots(request.user._id,schedule);
     return { success: true, message: 'Schedule updated successfully', data };
   }
 
