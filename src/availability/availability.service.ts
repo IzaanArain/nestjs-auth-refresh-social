@@ -21,7 +21,7 @@ export class AvailabilityService {
     if (schedule.length === 0) {
       throw new ForbiddenException('Pleas provide a valid schedule');
     }
-    await this.TimeSlotModel.deleteMany({ doctor: doctorId});
+    // await this.TimeSlotModel.deleteMany({ doctor: doctorId});
     await this.AvailabilityModel.deleteMany({doctor: doctorId});
     return await Promise.all(
       schedule.map(async ({ day, slots }) => {

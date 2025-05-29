@@ -12,7 +12,6 @@ export class UsersService {
     ) {}
 
     async createUser(data: CreateUserDto) {
-        console.log(data)
         const userExist = (await this.userModel.findOne({ email: data.email }))?.toObject();
         if(userExist) {
             throw new ConflictException('User with this email already exists');
