@@ -42,12 +42,14 @@ export class AuthService {
     response.cookie('jwt', accesToken, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite:
+        this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
       expires: oneWeekFromNow, // expiresAccessToken
     });
     const userData = await this.userService.getUser({
       _id: user._id.toHexString(),
     });
-    return { ...userData, password: undefined};
+    return { ...userData, password: undefined };
   }
 
   async verifyUser(email: string, password: string) {
