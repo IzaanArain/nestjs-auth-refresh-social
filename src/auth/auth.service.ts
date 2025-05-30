@@ -42,8 +42,7 @@ export class AuthService {
     response.cookie('jwt', accesToken, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite:
-        this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
       expires: oneWeekFromNow, // expiresAccessToken
     });
     const userData = await this.userService.getUser({
