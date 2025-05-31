@@ -40,11 +40,10 @@ export class AuthService {
     const oneWeekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     response.cookie('jwt', accesToken, {
+      // domain: 'yourfrontend.com', // You Cannot Force a Cookie for a Different Domain
       httpOnly: true,
-      // secure: this.configService.get('NODE_ENV') === 'production',
-      // sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
-      secure: false,
-      sameSite: 'lax',
+      secure: this.configService.get('NODE_ENV') === 'production', // false for dev & true for HTTPS prod
+      sameSite: 'lax', // 'none' for cross orgin production meaning if client and server orgins differ // 'lax' for dev & proxing frontend to the backend on prod
       expires: oneWeekFromNow, // expiresAccessToken
     });
 
