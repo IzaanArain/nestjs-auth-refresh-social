@@ -5,6 +5,8 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  app.setGlobalPrefix('api/v1');
   app.enableCors({
     origin: [
       'https://getmedica-next-frontend.vercel.app',
