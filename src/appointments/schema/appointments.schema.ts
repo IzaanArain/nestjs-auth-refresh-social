@@ -18,8 +18,11 @@ export class Appointments {
   @Prop({ required: true })
   status: string;
 
-  @Prop({required: true})
+  @Prop({ required: true })
   reason: string;
+
+  @Prop({ type: Date, required: true })
+  date: Date;
 }
 
 export const AppointmentsSchema = SchemaFactory.createForClass(Appointments);

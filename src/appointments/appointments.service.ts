@@ -21,11 +21,13 @@ export class AppointmentsService {
     patientId,
     reason,
     slotId,
+    date
   }: {
     doctorId: string;
     patientId: string;
     reason: string;
     slotId: string;
+    date: string
   }) {
     return new this.AppointmentsModel({
       doctor: doctorId,
@@ -33,6 +35,7 @@ export class AppointmentsService {
       reason,
       slot: slotId,
       status: 'pending',
+      date: new Date(date)
     }).save();
   }
 

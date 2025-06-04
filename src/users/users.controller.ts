@@ -39,7 +39,6 @@ export class UsersController {
     async getDoctors (
         @Param('id') id: string
     ) {
-        console.log(id)
         return await this.usersService.getDoctorInfo(id);
     }
 }

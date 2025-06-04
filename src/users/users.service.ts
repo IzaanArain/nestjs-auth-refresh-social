@@ -31,7 +31,7 @@ export class UsersService {
     };
     
     async getUsers(query: FilterQuery<User>) {
-        return await this.userModel.find(query);
+        return await this.userModel.find(query).select('-password');
     }
 
     async getDoctorInfo (doctorId: string) {
