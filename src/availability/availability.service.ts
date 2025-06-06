@@ -18,14 +18,14 @@ export class AvailabilityService {
     doctorId: string,
     schedule: CreateAvailabilityWithSlotsDto[],
   ) {
-    if (schedule.length === 0) {
-      throw new ForbiddenException('Pleas provide a valid schedule');
-    }
     // await this.TimeSlotModel.deleteMany({ doctor: doctorId});
-    await this.AvailabilityModel.deleteMany({doctor: doctorId});
+    await this.AvailabilityModel.deleteMany({ doctor: doctorId });
+    if (!schedule.length) {
+      // throw new ForbiddenException('Please provide a valid schedule');
+      return [];
+    }
     return await Promise.all(
       schedule.map(async ({ day, slots }) => {
-
         const createdSlots = await this.TimeSlotModel.insertMany(
           slots.map(({ from, to }) => {
             return {
