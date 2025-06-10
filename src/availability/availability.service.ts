@@ -12,37 +12,36 @@ export class AvailabilityService {
     private readonly AvailabilityModel: Model<Availability>,
     @InjectModel(TimeSlot.name)
     private readonly TimeSlotModel: Model<TimeSlot>,
-  ) { }
+  ) {}
 
   async createAvailabilityWithSlots(
     doctorId: string,
     schedule: CreateAvailabilityWithSlotsDto[],
   ) {
-    // await this.TimeSlotModel.deleteMany({ doctor: doctorId});
-    await this.AvailabilityModel.deleteMany({ doctor: doctorId });
     if (!schedule.length) {
-      // throw new ForbiddenException('Please provide a valid schedule');
       return [];
     }
     return await Promise.all(
       schedule.map(async ({ day, slots }) => {
-        const createdSlots = await this.TimeSlotModel.insertMany(
+        await this.AvailabilityModel.deleteMany({ doctor: doctorId, day });
+
+        const availability = await this.AvailabilityModel.create({
+          day,
+          doctor: doctorId,
+        });
+
+        await this.TimeSlotModel.insertMany(
           slots.map(({ from, to }) => {
             return {
               from,
               to,
+              availability: availability._id,
               doctor: doctorId,
             };
           }),
         );
-
-        const slotIds = createdSlots.map((slot) => slot._id);
-
-        return this.AvailabilityModel.findOneAndUpdate(
-          { doctor: doctorId, day },
-          { slots: slotIds },
-          { new: true, upsert: true },
-        );
+        
+        return availability;
       }),
     );
   }
@@ -57,12 +56,12 @@ export class AvailabilityService {
       {
         $lookup: {
           from: 'timeslots',
-          let: { slot_ids: '$slots' },
+          let: { avail_id: '$_id' },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $in: ['$_id', '$$slot_ids'],
+                  $eq: ['$availability', '$$avail_id'],
                 },
               },
             },

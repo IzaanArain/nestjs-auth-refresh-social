@@ -9,6 +9,9 @@ export class TimeSlot {
   @Prop({ required: true })
   to: string;
 
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Availability', required: true })
+  availability: Types.ObjectId;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   doctor: Types.ObjectId;
 }

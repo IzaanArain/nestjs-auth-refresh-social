@@ -11,9 +11,6 @@ export class Availability {
 
   @Prop({ required: true })
   day: string;
-
-  @Prop({ type: [SchemaTypes.ObjectId], ref: 'TimeSlot', required: true })
-  slots: Types.ObjectId[];
 }
 
 export const AvailabilitySchema = SchemaFactory.createForClass(Availability);
